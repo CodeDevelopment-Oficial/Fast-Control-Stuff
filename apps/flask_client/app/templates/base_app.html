@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Fast Control Stuff{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/app.css') }}">
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar">
+      <div class="side-brand">
+        <span class="side-mark">FCS</span>
+        <span class="side-name">Fast Control Stuff</span>
+      </div>
+      <nav class="side-nav">
+        <a href="{{ url_for('auth.dashboard') }}" class="side-link {{ 'active' if active_menu == 'dashboard' }}">🏠 Panel</a>
+        {% if permiso('herramientas:view') %}
+          <a href="{{ url_for('tools.list_tools') }}" class="side-link {{ 'active' if active_menu == 'tools' }}">🔧 Herramientas</a>
+        {% endif %}
+        {% if permiso('rentals:view') %}<span class="side-link disabled">📑 Rentas (próx.)</span>{% endif %}
+        {% if permiso('mantenimientos:view') %}<span class="side-link disabled">🛠️ Mantenimientos (próx.)</span>{% endif %}
+        {% if permiso('auditoria:view') %}<span class="side-link disabled">📜 Auditoría (próx.)</span>{% endif %}
+      </nav>
+      <div class="side-user">
+        <p class="side-user-name">{{ session['user']['full_name'] }}</p>
+        <p class="side-user-role">{{ session['user']['roles'] | join(', ') }}</p>
+        <form method="post" action="{{ url_for('auth.logout') }}">
+          <button type="submit" class="btn-ghost">Cerrar sesión</button>
+        </form>
+      </div>
+    </aside>
+
+    <main class="main">
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% for cat, msg in messages %}
+          <div class="flash flash-{{ cat }}">{{ msg }}</div>
+        {% endfor %}
+      {% endwith %}
+      {% block content %}{% endblock %}
+    </main>
+  </div>
+  {% block scripts %}{% endblock %}
+</body>
+</html>

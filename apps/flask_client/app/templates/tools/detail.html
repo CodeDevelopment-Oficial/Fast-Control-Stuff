@@ -1,0 +1,101 @@
+{% extends "base_app.html" %}
+{% set active_menu = 'tools' %}
+{% block title %}{{ tool.serial }} — Detalle{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <h1><span class="mono">{{ tool.serial }}</span></h1>
+  <div class="head-actions">
+    <span class="badge badge-{{ tool.status }}">{{ tool.status | replace('_',' ') }}</span>
+    {% if permiso('herramientas:update') %}
+      <a class="btn-ghost" href="{{ url_for('tools.edit_tool', tool_id=tool.id) }}">✏️ Editar</a>
+    {% endif %}
+    {% if permiso('herramientas:delete') %}
+      <form method="post" action="{{ url_for('tools.delete_tool', tool_id=tool.id) }}"
+            onsubmit="return confirm('¿Eliminar definitivamente esta pieza del catálogo? Solo si no tiene historial.')">
+        <button type="submit" class="btn-danger">🗑 Eliminar</button>
+      </form>
+    {% endif %}
+    <a class="btn-ghost" href="{{ url_for('tools.list_tools') }}">← Catálogo</a>
+  </div>
+</header>
+
+<div class="detail-grid">
+  <section class="card">
+    <h2>Ficha</h2>
+    <dl class="kv">
+      <dt>Tipo</dt><dd>{{ tool.type_name }} ({{ tool.type_code }})</dd>
+      <dt>Categoría</dt><dd>{{ tool.category_name }}</dd>
+      <dt>Condición</dt><dd>{{ tool.condition }}</dd>
+      <dt>Ubicación</dt><dd>{{ tool.location_name or '—' }}</dd>
+      <dt>Certificado</dt><dd>{{ tool.certificate_no or '—' }} {{ ('· vence ' + tool.certificate_expires) if tool.certificate_expires else '' }}</dd>
+      <dt>Adquirida</dt><dd>{{ tool.acquired_at or '—' }}</dd>
+      <dt>Notas</dt><dd>{{ tool.notes or '—' }}</dd>
+    </dl>
+
+    {% if tool.life_hours %}
+      {% set pct = ((tool.used_hours / tool.life_hours) * 100) | round(1) %}
+      <div class="life-wrap">
+        <p>Vida útil: <strong>{{ '%g' % tool.used_hours }} h</strong> de {{ '%g' % tool.life_hours }} h
+           (restan {{ '%g' % tool.remaining_hours }} h) — {{ pct }}%</p>
+        <div class="lifebar big {{ 'danger' if pct >= 90 else 'warn' if pct >= 75 else '' }}">
+          <i style="width: {{ [pct, 100] | min }}%"></i>
+        </div>
+      </div>
+    {% endif %}
+  </section>
+
+  <section class="card actions-col">
+    {% if permiso('herramientas:update-status') and tool.status != 'baja' %}
+      <form method="post" action="{{ url_for('tools.change_status', tool_id=tool.id) }}" class="mini-form">
+        <h3>Cambiar estatus</h3>
+        <label class="field"><select name="status" required>
+          {% for s in statuses if s != tool.status %}<option value="{{ s }}">{{ s | replace('_',' ') }}</option>{% endfor %}
+        </select><span>Nuevo estatus</span></label>
+        <label class="field"><input type="text" name="reason" required minlength="5" maxlength="255"><span>Motivo *</span></label>
+        <button class="btn-primary sm" type="submit">Aplicar</button>
+      </form>
+    {% endif %}
+
+    {% if permiso('herramientas:update') and tool.status != 'baja' %}
+      <form method="post" action="{{ url_for('tools.add_hours', tool_id=tool.id) }}" class="mini-form">
+        <h3>Registrar horas de uso</h3>
+        <label class="field"><input type="number" name="hours" step="0.5" min="0.5" required><span>Horas (+)</span></label>
+        <label class="field"><input type="text" name="reason" maxlength="255"><span>Motivo / pozo</span></label>
+        <button class="btn-primary sm" type="submit">Sumar horas</button>
+      </form>
+
+      <form method="post" action="{{ url_for('tools.move_tool', tool_id=tool.id) }}" class="mini-form">
+        <h3>Mover de ubicación</h3>
+        <label class="field"><select name="to_location_id" required>
+          {% for l in locations if l.id != tool.location_id %}<option value="{{ l.id }}">{{ l.name }}</option>{% endfor %}
+        </select><span>Destino</span></label>
+        <label class="field"><input type="text" name="reason" maxlength="255"><span>Motivo</span></label>
+        <button class="btn-primary sm" type="submit">Mover</button>
+      </form>
+    {% endif %}
+  </section>
+</div>
+
+<section class="card">
+  <h2>Trazabilidad — movimientos de la pieza</h2>
+  <table class="grid small">
+    <thead><tr><th>Fecha</th><th>Tipo</th><th>Estatus</th><th>Ubicación</th><th>Horas</th><th>Motivo</th><th>Usuario</th></tr></thead>
+    <tbody>
+    {% for m in tool.movements %}
+      <tr>
+        <td class="mono">{{ m.created_at[:16] | replace('T',' ') }}</td>
+        <td>{{ m.movement_type }}</td>
+        <td>{{ (m.from_status ~ ' → ' ~ m.to_status) if m.from_status or m.to_status else '—' }}</td>
+        <td>{{ ('#' ~ m.from_location_id ~ ' → #' ~ m.to_location_id) if m.to_location_id else '—' }}</td>
+        <td>{{ ('+' ~ '%g' % m.hours_delta) if m.hours_delta else '—' }}</td>
+        <td>{{ m.reason or '—' }}</td>
+        <td>#{{ m.user_id or '—' }}</td>
+      </tr>
+    {% else %}
+      <tr><td colspan="7" class="empty">Sin movimientos.</td></tr>
+    {% endfor %}
+    </tbody>
+  </table>
+</section>
+{% endblock %}

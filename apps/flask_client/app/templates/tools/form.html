@@ -1,0 +1,99 @@
+{% extends "base_app.html" %}
+{% set active_menu = 'tools' %}
+{% block title %}{{ 'Editar' if mode == 'edit' else 'Alta de' }} herramienta{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <h1>{{ '✏️ Editar herramienta' if mode == 'edit' else '➕ Alta de herramienta' }}</h1>
+  <a class="btn-ghost" href="{{ url_for('tools.list_tools') }}">← Volver al catálogo</a>
+</header>
+
+{% if error %}<div class="flash flash-danger">{{ error }}</div>{% endif %}
+
+<form method="post" class="card-form">
+  <fieldset>
+    <legend>Identificación</legend>
+    <label class="field">
+      <input type="text" name="serial" required minlength="3" maxlength="64"
+             value="{{ tool.serial if tool else '' }}"
+             {{ 'readonly style="opacity:.7"' if mode == 'edit' }}>
+      <span>Serial / UID (único por pieza) *</span>
+    </label>
+    <label class="field">
+      <select name="type_id" required>
+        <option value="">— Selecciona tipo —</option>
+        {% for c in categories %}
+          <optgroup label="{{ c.name }}">
+            {% for t in types if t.category_id == c.id %}
+              <option value="{{ t.id }}" {{ 'selected' if tool and tool.type_id == t.id }}>
+                {{ t.name }} ({{ t.code }})
+              </option>
+            {% endfor %}
+          </optgroup>
+        {% endfor %}
+      </select>
+      <span>Tipo de herramienta *</span>
+    </label>
+    <label class="field">
+      <select name="condition">
+        {% for c in conditions %}
+          <option value="{{ c }}" {{ 'selected' if tool and tool.condition == c }}>{{ c }}</option>
+        {% endfor %}
+      </select>
+      <span>Condición física</span>
+    </label>
+    <label class="field">
+      <select name="location_id">
+        <option value="">— Sin ubicación —</option>
+        {% for l in locations %}
+          <option value="{{ l.id }}" {{ 'selected' if tool and tool.location_id == l.id }}>{{ l.name }}</option>
+        {% endfor %}
+      </select>
+      <span>Ubicación actual</span>
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Vida útil (horas)</legend>
+    <label class="field">
+      <input type="number" step="0.5" min="0" name="life_hours"
+             value="{{ tool.life_hours if tool and tool.life_hours is not none else '' }}">
+      <span>Vida útil máxima (vacío = hereda del tipo)</span>
+    </label>
+    <label class="field">
+      <input type="number" step="0.5" min="0" name="used_hours"
+             value="{{ ('%.2f' % tool.used_hours) if tool and tool.used_hours is defined else '' }}"
+             {{ 'readonly style="opacity:.7"' if mode == 'edit' }}>
+      <span>Horas usadas acumuladas {% if mode == 'edit' %}(se ajustan con «Registrar horas»){% endif %}</span>
+    </label>
+  </fieldset>
+
+  <fieldset>
+    <legend>Certificación y compra</legend>
+    <label class="field">
+      <input type="text" maxlength="80" name="certificate_no"
+             value="{{ tool.certificate_no or '' if tool else '' }}">
+      <span>No. de certificado (API 5CT/7K…)</span>
+    </label>
+    <label class="field">
+      <input type="date" name="certificate_expires"
+             value="{{ tool.certificate_expires or '' if tool else '' }}">
+      <span>Vigencia del certificado</span>
+    </label>
+    <label class="field">
+      <input type="date" name="acquired_at"
+             value="{{ tool.acquired_at or '' if tool else '' }}">
+      <span>Fecha de adquisición</span>
+    </label>
+    <label class="field wide">
+      <textarea name="notes" rows="3">{{ tool.notes or '' if tool else '' }}</textarea>
+      <span>Notas</span>
+    </label>
+  </fieldset>
+
+  <div class="form-actions">
+    <button type="submit" class="btn-primary">{{ 'Guardar cambios' if mode == 'edit' else 'Dar de alta' }}</button>
+    <a class="btn-ghost" href="{{ url_for('tools.list_tools') }}">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

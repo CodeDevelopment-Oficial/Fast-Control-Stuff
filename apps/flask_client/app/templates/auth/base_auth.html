@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}Fast Control Stuff — Acceso{% endblock %}</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/login.css') }}">
+  {% block head %}{% endblock %}
+</head>
+<body>
+  <div class="auth-shell">
+
+    {# ==================== MITAD IZQUIERDA: marca + beneficios ==================== #}
+    <section class="brand-panel">
+      <div class="brand-logo">
+        <div class="brand-mark">FCS</div>
+        <h1 class="brand-name">Fast Control Stuff</h1>
+      </div>
+
+      <p class="brand-tagline">
+        Sistema de control y administración de inventarios para renta de
+        herramientas de perforación de pozos.
+      </p>
+
+      <ul class="benefits">
+        <li class="benefit-item">
+          <span class="benefit-icon">🛢️</span>
+          <div>
+            <p class="benefit-title">Control total del inventario</p>
+            <p class="benefit-desc">Cada pieza con serial/UID único: ubicación, estatus y disponibilidad en tiempo real.</p>
+          </div>
+        </li>
+        <li class="benefit-item">
+          <span class="benefit-icon">⏱️</span>
+          <div>
+            <p class="benefit-title">Vida útil y horas de uso</p>
+            <p class="benefit-desc">Alertas de mantenimiento programado y límites de vida útil por herramienta.</p>
+          </div>
+        </li>
+        <li class="benefit-item">
+          <span class="benefit-icon">📋</span>
+          <div>
+            <p class="benefit-title">Certificaciones al día</p>
+            <p class="benefit-desc">Trazabilidad de certificaciones vigentes por equipo y por pozo asignado.</p>
+          </div>
+        </li>
+        <li class="benefit-item">
+          <span class="benefit-icon">🔐</span>
+          <div>
+            <p class="benefit-title">Seguridad y trazabilidad</p>
+            <p class="benefit-desc">Roles y permisos granulares; registro de quién sacó y devolvió cada herramienta.</p>
+          </div>
+        </li>
+      </ul>
+
+      <footer class="brand-footer">© {{ year }} Fast Control Stuff · Industria petrolera</footer>
+    </section>
+
+    {# ==================== MITAD DERECHA: formulario ==================== #}
+    <section class="form-panel">
+      <div class="login-card">
+        {% block card %}{% endblock %}
+      </div>
+    </section>
+  </div>
+
+  {% block scripts %}{% endblock %}
+</body>
+</html>

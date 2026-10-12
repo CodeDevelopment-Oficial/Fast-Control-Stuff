@@ -1,0 +1,22 @@
+{% extends "auth/base_auth.html" %}
+
+{% block card %}
+<h2 class="login-title">Bienvenido, {{ user.full_name.split(' ')[0] }} 👋</h2>
+<p class="login-subtitle">
+  Sesión iniciada correctamente. Roles: <strong>{{ user.roles | join(', ') }}</strong>
+</p>
+
+<div class="alert alert-success">
+  ✔ Autenticación Flask (cookie HTTP-only) + JWT de FastAPI funcionando con RBAC granular.
+</div>
+
+<p style="color:#64748b; font-size:.9rem; line-height:1.6;">
+  Aquí irá el tablero de inventario en la siguiente iteración: herramientas disponibles,
+  rentas activas, mantenimientos próximos y certificaciones por vencer — cada módulo visible
+  solo si tienes el permiso <code>recurso:view</code> correspondiente.
+</p>
+
+<form method="post" action="{{ url_for('auth.logout') }}" style="margin-top:1.5rem;">
+  <button type="submit" class="btn-primary">Cerrar sesión</button>
+</form>
+{% endblock %}
