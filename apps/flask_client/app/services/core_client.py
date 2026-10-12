@@ -23,13 +23,16 @@ class CoreClient:
 
     # ------------------------------------------------------------ helpers
 
-    def _request(self, method: str, path: str, *, json_body=None, token: str | None = None):
+    def _request(self, method: str, path: str, *, json_body=None, token: str | None = None,
+                 params: dict | None = None):
         headers = {}
         if token:
             headers["Authorization"] = f"Bearer {token}"
+        clean_params = {k: v for k, v in (params or {}).items() if v not in (None, "")}
         try:
             resp = self.session.request(method, f"{self.base}{path}", json=json_body,
-                                        headers=headers, timeout=self.timeout)
+                                        headers=headers, params=clean_params or None,
+                                        timeout=self.timeout)
         except requests.RequestException as exc:
             raise CoreError(503, "core_unreachable",
                             "No hay conexión con el servicio core. Intenta en unos momentos.") from exc
@@ -47,6 +50,8 @@ class CoreClient:
             else:
                 code, message = "api_error", str(detail) or "Ocurrió un error inesperado."
             raise CoreError(resp.status_code, code, message)
+        if resp.status_code == 204 or not resp.content:
+            return {}
         return resp.json()
 
     # ------------------------------------------------------------ auth
@@ -69,3 +74,45 @@ class CoreClient:
     def reset_password(self, token: str, new_password: str) -> dict:
         return self._request("POST", "/auth/reset-password",
                              json_body={"token": token, "new_password": new_password})
+
+    # ------------------------------------------------------------ herramientas
+
+    def tools_list(self, token: str, params: dict | None = None) -> dict:
+        return self._request("GET", "/tools", token=token, json_body=None, params=params)
+
+    def tool_get(self, token: str, tool_id: int) -> dict:
+        return self._request("GET", f"/tools/{tool_id}", token=token)
+
+    def tool_create(self, token: str, body: dict) -> dict:
+        return self._request("POST", "/tools", token=token, json_body=body)
+
+    def tool_update(self, token: str, tool_id: int, body: dict) -> dict:
+        return self._request("PATCH", f"/tools/{tool_id}", token=token, json_body=body)
+
+    def tool_delete(self, token: str, tool_id: int) -> None:
+        self._request("DELETE", f"/tools/{tool_id}", token=token)
+
+    def tool_status(self, token: str, tool_id: int, status: str, reason: str) -> dict:
+        return self._request("POST", f"/tools/{tool_id}/status", token=token,
+                             json_body={"status": status, "reason": reason})
+
+    def tool_hours(self, token: str, tool_id: int, hours: float, reason: str | None = None) -> dict:
+        return self._request("POST", f"/tools/{tool_id}/hours", token=token,
+                             json_body={"hours": hours, "reason": reason})
+
+    def tool_move(self, token: str, tool_id: int, to_location_id: int, reason: str | None = None) -> dict:
+        return self._request("POST", f"/tools/{tool_id}/move", token=token,
+                             json_body={"to_location_id": to_location_id, "reason": reason})
+
+    def categories(self, token: str) -> list:
+        return self._request("GET", "/tools/categories", token=token)
+
+    def types(self, token: str, category_id: int | None = None) -> list:
+        params = {"category_id": category_id} if category_id else None
+        return self._request("GET", "/tools/types", token=token, params=params)
+
+    def locations(self, token: str) -> list:
+        return self._request("GET", "/tools/locations", token=token)
+
+    def counters(self, token: str) -> dict:
+        return self._request("GET", "/tools/counters", token=token)

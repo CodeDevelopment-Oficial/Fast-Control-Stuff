@@ -77,3 +77,33 @@ formulario de **inputs flotantes animados (CSS puro)**, botón de **recordar ses
 de **¿Olvidaste tu contraseña?** (token por SMTP). Bloqueo de cuenta tras 5 intentos fallidos.
 
 Credenciales semilla: `admin@fastcontrol.com` / `Admin#2026!` (cámbiala en producción).
+
+## Arranque rápido (comandos válidos)
+
+Entorno: `/workspace/.venv` (Python 3.11). Siempre usa el intérprete del venv:
+
+```bash
+# FastAPI Core  (dueño único de la BD) — desde apps/fastapi_core
+cd apps/fastapi_core
+../../.venv/bin/python -m uvicorn app.main:app --host 127.0.0.1 --port 8000
+# alternativas equivalentes:
+#   ../../.venv/bin/python asgi.py
+#   ../../.venv/bin/python -m uvicorn asgi:app --host 127.0.0.1 --port 8000
+
+# Seed RBAC + super_admin (idempotente)
+../../.venv/bin/python -m app.seed
+
+# Migraciones Alembic (con bootstrap de sys.path propio)
+../../.venv/bin/alembic upgrade head
+
+# Flask Cliente (MVC) — desde apps/flask_client
+cd ../flask_client
+../../.venv/bin/python wsgi.py          # escucha en FLASK_PORT (def. 5000)
+```
+
+⚠️ Si ves `ModuleNotFoundError: No module named 'app'`: estás corriendo con el
+Python del sistema (sin dependencias ni path) o desde el directorio equivocado.
+El paquete `app` vive dentro de cada subproyecto; hay que ejecutar **desde**
+`apps/fastapi_core` o `apps/flask_client`, y con el binario de `.venv`.
+Para IIS/producción: apunta el handler al archivo `wsgi.py` / `asgi.py` (ambos
+inyectan su propia raíz en `sys.path`).

@@ -1,3 +1,14 @@
+import os
+import sys
+
+# Bootstrap: asegura que apps/fastapi_core esté en sys.path para poder importar
+# el paquete `app`, sin importar desde dónde se invoque alembic (la raíz del
+# monorepo, scripts de IIS, cron, etc.). Alembic carga este archivo con exec()
+# y NO añade el cwd automáticamente.
+_CORE_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+if _CORE_ROOT not in sys.path:
+    sys.path.insert(0, _CORE_ROOT)
+
 from logging.config import fileConfig
 
 from alembic import context

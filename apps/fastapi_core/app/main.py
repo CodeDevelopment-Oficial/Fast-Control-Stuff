@@ -1,7 +1,7 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.v1.endpoints import auth
+from app.api.v1.endpoints import auth, tools
 from app.core.config import settings
 from app.core.errors import register_exception_handlers
 
@@ -25,6 +25,7 @@ register_exception_handlers(app)
 
 API_V1 = "/api/v1"
 app.include_router(auth.router, prefix=API_V1)
+app.include_router(tools.router, prefix=API_V1)
 
 
 @app.get("/health", tags=["meta"])

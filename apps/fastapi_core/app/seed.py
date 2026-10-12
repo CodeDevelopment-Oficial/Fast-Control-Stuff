@@ -4,6 +4,7 @@ Uso:  python -m app.seed            (idempotente)
       FCS_ADMIN_EMAIL=... FCS_ADMIN_PASSWORD=... python -m app.seed
 """
 import os
+from datetime import date
 
 from app.core.database import SessionLocal
 from app.core.permissions import PERMISSION_WILDCARD, all_permissions
@@ -63,6 +64,38 @@ def run():
             print("[seed] ⚠️  Cambia esta contraseña en producción.")
         else:
             print(f"[seed] Usuario ya existe: {email}")
+
+        # 4) Catálogos mínimos de demostración (solo si el inventario está vacío)
+        from app.models.tool import Location, Tool, ToolCategory, ToolType
+
+        if db.query(ToolCategory).count() == 0:
+            trb = ToolCategory(name="Top Drive / TRB", description="Herramienta rotatoria inferior")
+            jar = ToolCategory(name="Jarras", description="Jarras mecánicas de perforación")
+            db.add_all([trb, jar])
+            db.flush()
+            t1 = ToolType(category_id=trb.id, code="TRB-658-REG", name="TRB 6-5/8\" API Reg",
+                          size_inch="6-5/8\"", material="AISI 4145H",
+                          connection_top="NC50 BOX", connection_bottom="NC50 PIN",
+                          default_life_hours=1500)
+            t2 = ToolType(category_id=jar.id, code="JAR-730-NT", name="Jarra 7 1/4\" No-Taper",
+                          size_inch="7 1/4\"", material="AISI 4145H", default_life_hours=800)
+            db.add_all([t1, t2])
+            patio = Location(name="Patio Central Cd. Madero", address="Cd. Madero, Tamaulipas")
+            taller = Location(name="Taller de Mantenimiento", address="Cd. Madero, Tamaulipas")
+            db.add_all([patio, taller])
+            db.flush()
+            db.add_all([
+                Tool(serial="TRB-2024-0001", type_id=t1.id, location_id=patio.id,
+                     condition="buena", life_hours=1500, used_hours=320,
+                     certificate_no="API-5CT-88121", certificate_expires=date(2027, 3, 15)),
+                Tool(serial="TRB-2024-0002", type_id=t1.id, location_id=patio.id,
+                     condition="excelente", life_hours=1500, used_hours=45),
+                Tool(serial="JAR-2023-0107", type_id=t2.id, location_id=taller.id,
+                     status="mantenimiento", condition="regular",
+                     life_hours=800, used_hours=690,
+                     certificate_no="API-7K-55012", certificate_expires=date(2026, 11, 30)),
+            ])
+            print("[seed] Catálogo demo: 2 categorías, 2 tipos, 2 ubicaciones, 3 piezas.")
 
         db.commit()
         print("[seed] OK — permisos, rol super_admin y administrador listos.")

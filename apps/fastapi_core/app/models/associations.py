@@ -2,7 +2,7 @@
 from sqlalchemy import Column, ForeignKey, Integer, Table
 
 from app.core.database import Base
-import app.models.user  # noqa: F401  (asegura que las tablas base existan al declarar esta)
+from app.models.user import User  # noqa: F401  (asegura que las tablas base existan al declarar esta)
 
 user_roles = Table(
     "user_roles",

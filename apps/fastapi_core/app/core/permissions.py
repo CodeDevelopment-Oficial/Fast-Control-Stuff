@@ -10,7 +10,10 @@ RESOURCES = {
     "roles": ["view", "create", "update", "delete"],
     "permisos": ["view", "assign"],
     "inventario": ["view", "create", "update", "delete", "export"],
-    "herramientas": ["view", "create", "update", "delete", "export"],
+    "herramientas": [
+        "view", "create", "update", "update-status", "add-hours", "move",
+        "delete", "export", "import",
+    ],
     "rentals": ["view", "create", "update", "delete", "export"],
     "mantenimientos": ["view", "create", "update", "delete"],
     "certificaciones": ["view", "create", "update", "delete"],

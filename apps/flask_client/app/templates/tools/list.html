@@ -1,0 +1,107 @@
+{% extends "base_app.html" %}
+{% set active_menu = 'tools' %}
+{% block title %}Catálogo de herramientas{% endblock %}
+
+{% block content %}
+<header class="page-head">
+  <h1>🔧 Catálogo de herramientas</h1>
+  {% if permiso('herramientas:create') %}
+    <a class="btn-primary" href="{{ url_for('tools.new_tool') }}">+ Alta de herramienta</a>
+  {% endif %}
+</header>
+
+{% if counters %}
+<section class="kpis">
+  <div class="kpi"><span class="kpi-num">{{ counters.total }}</span><span class="kpi-lbl">Piezas totales</span></div>
+  {% for st, n in counters.by_status.items() %}
+    <div class="kpi"><span class="kpi-num">{{ n }}</span><span class="kpi-lbl">{{ st | replace('_',' ') }}</span></div>
+  {% endfor %}
+  <div class="kpi kpi-warn"><span class="kpi-num">{{ counters.cert_by_vencimiento.por_vencer_90d + counters.cert_by_vencimiento.vencida }}</span><span class="kpi-lbl">Cert. por vencer / vencidas</span></div>
+  <div class="kpi kpi-danger"><span class="kpi-num">{{ counters.vida_agotada }}</span><span class="kpi-lbl">Vida útil agotada</span></div>
+</section>
+{% endif %}
+
+<form method="get" class="filter-bar">
+  <input type="text" name="q" placeholder="Buscar serial / tipo…" value="{{ filters.q }}">
+  <select name="status">
+    <option value="">Estatus: todos</option>
+    {% for s in statuses %}
+      <option value="{{ s }}" {{ 'selected' if filters.status == s }}>{{ s | replace('_',' ') }}</option>
+    {% endfor %}
+  </select>
+  <select name="category_id">
+    <option value="">Categoría: todas</option>
+    {% for c in categories %}
+      <option value="{{ c.id }}" {{ 'selected' if filters.category_id == c.id|string }}>{{ c.name }}</option>
+    {% endfor %}
+  </select>
+  <select name="location_id">
+    <option value="">Ubicación: todas</option>
+    {% for l in locations %}
+      <option value="{{ l.id }}" {{ 'selected' if filters.location_id == l.id|string }}>{{ l.name }}</option>
+    {% endfor %}
+  </select>
+  <select name="cert_state">
+    <option value="">Certificación: todas</option>
+    <option value="por_vencer" {{ 'selected' if filters.cert_state == 'por_vencer' }}>Por vencer (90 d)</option>
+    <option value="vencida" {{ 'selected' if filters.cert_state == 'vencida' }}>Vencidas</option>
+    <option value="sin_certificado" {{ 'selected' if filters.cert_state == 'sin_certificado' }}>Sin certificado</option>
+  </select>
+  <button type="submit" class="btn-ghost">Filtrar</button>
+</form>
+
+{% if error %}<div class="flash flash-danger">{{ error }}</div>{% endif %}
+
+<table class="grid">
+  <thead>
+    <tr>
+      <th>Serial / UID</th><th>Tipo</th><th>Estatus</th><th>Condición</th>
+      <th>Ubicación</th><th>Horas usadas</th><th>Certificación</th><th></th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for t in data['items'] %}
+    <tr>
+      <td class="mono"><a href="{{ url_for('tools.detail', tool_id=t.id) }}">{{ t.serial }}</a></td>
+      <td>{{ t.type_name }}<br><small class="muted">{{ t.category_name }} · {{ t.type_code }}</small></td>
+      <td><span class="badge badge-{{ t.status }}">{{ t.status | replace('_',' ') }}</span></td>
+      <td>{{ t.condition }}</td>
+      <td>{{ t.location_name or '—' }}</td>
+      <td>
+        {% if t.life_hours %}
+          {{ '%g' % t.used_hours }} / {{ '%g' % t.life_hours }} h
+          <div class="lifebar"><i style="width: {{ [((t.used_hours / t.life_hours) * 100) | int, 100] | min }}%"></i></div>
+        {% else %}
+          {{ '%g' % t.used_hours }} h
+        {% endif %}
+      </td>
+      <td>
+        {% if t.certificate_expires %}
+          {{ t.certificate_expires }}
+          <small class="muted">{{ t.certificate_no }}</small>
+        {% elif t.certificate_no %}
+          {{ t.certificate_no }} <small class="muted">(sin fecha)</small>
+        {% else %}—{% endif %}
+      </td>
+      <td class="row-actions">
+        {% if permiso('herramientas:update') %}
+          <a href="{{ url_for('tools.edit_tool', tool_id=t.id) }}">Editar</a>
+        {% endif %}
+      </td>
+    </tr>
+  {% else %}
+    <tr><td colspan="8" class="empty">Sin resultados. Registra la primera pieza con «Alta de herramienta».</td></tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+{% if pages > 1 %}
+<nav class="pager">
+  {% for p in range(1, pages + 1) %}
+    {% if p == data.page %}<span class="pg current">{{ p }}</span>
+    {% else %}<a class="pg" href="{{ url_for('tools.list_tools', **dict(filters, page=p)) }}">{{ p }}</a>{% endif %}
+  {% endfor %}
+</nav>
+{% endif %}
+<p class="muted total">{{ data.total }} pieza(s) en el catálogo.</p>
+{% endblock %}
