@@ -1,0 +1,345 @@
+/* ============================================================
+   Fast Control Stuff — Login a pantalla completa
+   Inputs flotantes animados con CSS puro (sin librerías JS)
+   ============================================================ */
+
+:root {
+  --fcs-oil: #0b1f33;          /* azul petróleo profundo */
+  --fcs-oil-2: #123456;
+  --fcs-accent: #f59e0b;       /* ámbar industrial */
+  --fcs-accent-2: #fbbf24;
+  --fcs-steel: #64748b;
+  --fcs-danger: #dc2626;
+  --fcs-success: #16a34a;
+  --fcs-radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  height: 100%;
+  font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+}
+
+/* ---------- Layout pantalla completa: mitad izquierda / derecha ---------- */
+.auth-shell {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  min-height: 100vh;
+}
+
+/* Panel izquierdo: marca + beneficios */
+.brand-panel {
+  position: relative;
+  overflow: hidden;
+  color: #fff;
+  background:
+    radial-gradient(1200px 600px at -10% -20%, rgba(245, 158, 11, .18), transparent 60%),
+    linear-gradient(160deg, var(--fcs-oil) 0%, var(--fcs-oil-2) 55%, #0d2b45 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: clamp(2rem, 5vw, 5rem);
+}
+
+/* Silueta de torre de perforación decorativa (SVG inline como patrón) */
+.brand-panel::after {
+  content: "";
+  position: absolute;
+  inset: auto -40px -60px auto;
+  width: 420px;
+  height: 420px;
+  opacity: .10;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Cpath d='M50 5 L70 90 H30 Z M38 60 h24 M42 45 h16 M35 75 h30' stroke='%23ffffff' stroke-width='2.5' fill='none'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  pointer-events: none;
+}
+
+.brand-logo {
+  display: flex;
+  align-items: center;
+  gap: .9rem;
+  margin-bottom: 2.2rem;
+}
+
+.brand-mark {
+  width: 54px;
+  height: 54px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  font-weight: 800;
+  font-size: 1.4rem;
+  color: var(--fcs-oil);
+  background: linear-gradient(135deg, var(--fcs-accent), var(--fcs-accent-2));
+  box-shadow: 0 8px 24px rgba(245, 158, 11, .35);
+}
+
+.brand-name {
+  font-size: clamp(1.9rem, 3.2vw, 2.8rem);
+  font-weight: 800;
+  letter-spacing: -0.5px;
+  margin: 0;
+}
+
+.brand-tagline {
+  font-size: 1.05rem;
+  color: #cbd5e1;
+  max-width: 34rem;
+  line-height: 1.6;
+}
+
+.benefits {
+  list-style: none;
+  padding: 0;
+  margin: 2.4rem 0 0;
+  display: grid;
+  gap: 1.1rem;
+  max-width: 30rem;
+}
+
+.benefit-item {
+  display: flex;
+  gap: .95rem;
+  align-items: flex-start;
+  animation: rise .7s ease both;
+}
+
+.benefit-item:nth-child(2) { animation-delay: .12s; }
+.benefit-item:nth-child(3) { animation-delay: .24s; }
+.benefit-item:nth-child(4) { animation-delay: .36s; }
+
+@keyframes rise {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.benefit-icon {
+  flex: 0 0 auto;
+  width: 42px;
+  height: 42px;
+  border-radius: 11px;
+  display: grid;
+  place-items: center;
+  font-size: 1.2rem;
+  background: rgba(255, 255, 255, .08);
+  border: 1px solid rgba(255, 255, 255, .14);
+}
+
+.benefit-title { font-weight: 700; margin: 0 0 2px; font-size: 1rem; }
+.benefit-desc  { margin: 0; color: #b6c4d6; font-size: .9rem; line-height: 1.45; }
+
+.brand-footer {
+  margin-top: 3rem;
+  font-size: .8rem;
+  color: #7f93ab;
+}
+
+/* Panel derecho: formulario */
+.form-panel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: #f8fafc;
+}
+
+.login-card {
+  width: 100%;
+  max-width: 420px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: var(--fcs-radius);
+  padding: 2.4rem 2.2rem;
+  box-shadow: 0 20px 50px rgba(15, 23, 42, .08);
+  animation: cardIn .5s ease both;
+}
+
+@keyframes cardIn {
+  from { opacity: 0; transform: translateY(18px) scale(.98); }
+  to   { opacity: 1; transform: none; }
+}
+
+.login-title { margin: 0 0 .35rem; font-size: 1.6rem; color: #0f172a; font-weight: 800; }
+.login-subtitle { margin: 0 0 1.8rem; color: var(--fcs-steel); font-size: .95rem; }
+
+/* ---------- Input flotante animado (CSS puro) ---------- */
+.float-field { position: relative; margin-bottom: 1.5rem; }
+
+.float-field input {
+  width: 100%;
+  padding: 1.15rem 1rem .55rem;
+  font-size: 1rem;
+  color: #0f172a;
+  background: #fff;
+  border: 1.5px solid #cbd5e1;
+  border-radius: 10px;
+  outline: none;
+  transition: border-color .25s ease, box-shadow .25s ease;
+}
+
+.float-field label {
+  position: absolute;
+  left: .95rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--fcs-steel);
+  font-size: 1rem;
+  pointer-events: none;
+  background: transparent;
+  padding: 0 .25rem;
+  transition: all .22s cubic-bezier(.2, .8, .2, 1);
+}
+
+/* La etiqueta "flota" al hacer foco o cuando hay contenido (:placeholder-shown) */
+.float-field input:focus + label,
+.float-field input:not(:placeholder-shown) + label {
+  top: 0;
+  transform: translateY(-50%) scale(.85);
+  color: var(--fcs-accent);
+  background: #fff;
+  font-weight: 600;
+}
+
+.float-field input:focus {
+  border-color: var(--fcs-accent);
+  box-shadow: 0 0 0 4px rgba(245, 158, 11, .14);
+}
+
+/* Icono ojo para mostrar/ocultar contraseña */
+.field-toggle-pass {
+  position: absolute;
+  right: .6rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: var(--fcs-steel);
+  cursor: pointer;
+  font-size: 1.05rem;
+  padding: .3rem .45rem;
+  border-radius: 8px;
+}
+.field-toggle-pass:hover { color: var(--fcs-oil); background: #f1f5f9; }
+
+/* ---------- Opciones: recordar / recuperar ---------- */
+.form-options {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin: .2rem 0 1.4rem;
+  font-size: .88rem;
+}
+
+.remember {
+  display: inline-flex;
+  align-items: center;
+  gap: .5rem;
+  color: #334155;
+  cursor: pointer;
+  user-select: none;
+}
+
+/* Toggle switch "Recordar sesión" */
+.switch { position: relative; width: 40px; height: 22px; flex: 0 0 auto; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider {
+  position: absolute; inset: 0;
+  background: #cbd5e1;
+  border-radius: 999px;
+  transition: background .25s ease;
+}
+.slider::before {
+  content: "";
+  position: absolute;
+  width: 16px; height: 16px;
+  left: 3px; top: 3px;
+  background: #fff;
+  border-radius: 50%;
+  transition: transform .25s cubic-bezier(.2, .8, .2, 1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, .25);
+}
+.switch input:checked + .slider { background: var(--fcs-accent); }
+.switch input:checked + .slider::before { transform: translateX(18px); }
+
+.link-muted { color: var(--fcs-oil-2); text-decoration: none; font-weight: 600; }
+.link-muted:hover { text-decoration: underline; color: var(--fcs-accent); }
+
+/* ---------- Botones ---------- */
+.btn-primary {
+  width: 100%;
+  padding: .95rem 1rem;
+  font-size: 1.02rem;
+  font-weight: 700;
+  color: #fff;
+  background: linear-gradient(135deg, var(--fcs-oil) 0%, var(--fcs-oil-2) 100%);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: transform .15s ease, box-shadow .25s ease;
+}
+.btn-primary:hover { transform: translateY(-1px); box-shadow: 0 12px 26px rgba(11, 31, 51, .28); }
+.btn-primary:active { transform: translateY(0); }
+.btn-primary:disabled { opacity: .65; cursor: wait; }
+
+/* brillo que cruza el botón */
+.btn-primary::after {
+  content: "";
+  position: absolute;
+  top: 0; left: -80%;
+  width: 40%; height: 100%;
+  background: linear-gradient(120deg, transparent, rgba(255, 255, 255, .28), transparent);
+  transition: left .5s ease;
+}
+.btn-primary:hover::after { left: 130%; }
+
+.btn-secondary {
+  display: inline-block;
+  padding: .7rem 1.2rem;
+  border-radius: 10px;
+  border: 1.5px solid #cbd5e1;
+  background: #fff;
+  color: #334155;
+  font-weight: 600;
+  cursor: pointer;
+  text-decoration: none;
+}
+.btn-secondary:hover { border-color: var(--fcs-oil-2); color: var(--fcs-oil); }
+
+/* ---------- Alertas ---------- */
+.alert {
+  padding: .8rem 1rem;
+  border-radius: 10px;
+  font-size: .9rem;
+  margin-bottom: 1.2rem;
+  border: 1px solid transparent;
+  animation: shake .35s ease;
+}
+.alert-error   { background: #fef2f2; color: #991b1b; border-color: #fecaca; }
+.alert-success { background: #f0fdf4; color: #166534; border-color: #bbf7d0; }
+.alert-info    { background: #eff6ff; color: #1e40af; border-color: #bfdbfe; }
+
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  75% { transform: translateX(5px); }
+}
+
+.form-foot {
+  margin-top: 1.6rem;
+  text-align: center;
+  font-size: .85rem;
+  color: var(--fcs-steel);
+}
+
+/* ---------- Responsive ---------- */
+@media (max-width: 900px) {
+  .auth-shell { grid-template-columns: 1fr; }
+  .brand-panel { min-height: auto; padding: 2.4rem 1.6rem; }
+  .benefits { display: none; }         /* en móvil prioriza el formulario */
+  .brand-panel::after { display: none; }
+}
