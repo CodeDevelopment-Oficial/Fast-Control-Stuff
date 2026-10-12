@@ -97,7 +97,7 @@ class Tool(Base):
             name="ck_tool_status",
         ),
         CheckConstraint(
-            "condition IN ('excelente','buena','regular','dano')",
+            "`condition` IN ('excelente','buena','regular','dano')",
             name="ck_tool_condition",
         ),
     )
